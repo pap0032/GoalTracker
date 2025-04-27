@@ -10,7 +10,7 @@ struct GoalListView: View {
     @ObservedObject var viewModel: GoalViewModel
     @State private var showingAddGoal = false
     @State private var selectedSortOption: SortOption = .dueDate
-    @State private var pulse = false
+    @State private var pulseGoalIDs: Set<UUID> = []
 
     var sortedActiveGoals: [Goal] {
         switch selectedSortOption {
@@ -114,10 +114,17 @@ struct GoalListView: View {
                                     Spacer()
                                 }
                                 .padding(.vertical, 8)
-                                .scaleEffect(goal.targetDate < Date.now ? (pulse ? 1.05 : 1.0) : 1.0)
-                                .animation(goal.targetDate < Date.now ? Animation.easeInOut(duration: 1.0).repeatForever(autoreverses: true) : .default, value: pulse)
+                                .scaleEffect(pulseGoalIDs.contains(goal.id) ? 1.05 : 1.0)
+                                .animation(
+                                    pulseGoalIDs.contains(goal.id)
+                                    ? Animation.easeInOut(duration: 1.0).repeatForever(autoreverses: true)
+                                    : .default,
+                                    value: pulseGoalIDs.contains(goal.id)
+                                )
                                 .onAppear {
-                                    pulse = true
+                                    if goal.targetDate < Date.now {
+                                        pulseGoalIDs.insert(goal.id)
+                                    }
                                 }
                             }
                         }
@@ -157,5 +164,3 @@ struct GoalListView_Previews: PreviewProvider {
         }
     }
 }
-
-
